@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
-import { Form, FormGroup, Label, Input, Alert, ListGroup, ListGroupItem, Badge } from 'reactstrap';
+import { Form, FormGroup, Label, Input, Alert, Badge } from 'reactstrap';
+import GameResults from './components/GameResults';
 
 import './App.css';
 
@@ -8,33 +9,66 @@ class App extends Component {
   constructor(props) {
     super(props);
 
+    // Local component state
     this.state = {
-      games: []
+      currentPage: 0,
+      allGames: [],
+      pagedGames: []
     };
   }
 
   componentWillMount = async () => {
     const request = await fetch('http://localhost:5000/api/games');
     const data = await request.json();
+    const pagedData = this.getPaginatedItems(data);
 
-    this.setState({ games: data });
+    // This will cause a re-render
+    this.setState({ allGames: data, pagedGames: pagedData, currentPage: 0 });
   }
 
   onSearch = async () => {
     const term = this.search.value;
     const request = await fetch(`http://localhost:5000/api/games/${term}`);
     const data = await request.json();
+    const pagedData = this.getPaginatedItems(data);
 
-    this.setState({ games: data });
+    // This will cause a re-render
+    this.setState({ allGames: data, pagedGames: pagedData, currentPage: 0 });
   }
 
-  onSearchDebounced = _.debounce(this.onSearch, 250)
+  // Move state to the clicked page number
+  handlePageClick = (data) => {
+    const pageNumber = data.selected + 1;
+    const pagedData = this.getPaginatedItems(this.state.allGames, pageNumber);
+
+    // This will cause a re-render
+    this.setState({ pagedGames: pagedData, currentPage: data.selected });
+  }
+
+  // Convert the data from the server to a paged result set for the client
+  getPaginatedItems = (items, pageNumber) => {
+    const page = pageNumber || 1,
+        perPage = 10,
+        offset = (page - 1) * perPage,
+        paginatedItems = _.drop(items, offset).slice(0, perPage);
+
+    return {
+        page: page,
+        perPage: perPage,
+        total: items.length,
+        totalPages: Math.ceil(items.length / perPage),
+        items: paginatedItems
+    };
+  }
+
+  // We debounce the search function in order to provide a better UX / less lag on the screen while typing freaky fast
+  onSearchDebounced = _.debounce(this.onSearch, 200)
 
   render() {
     return (
       <div className="App">
         <header className="App-header">
-          <h1 className="App-title">Search some games & stuff</h1>
+          <h1 className="App-title">Game Card Micron Finder</h1>
         </header>
 
         <div className="container">
@@ -47,21 +81,7 @@ class App extends Component {
             </FormGroup>
           </Form>
 
-          {this.state.games.length > 0 ? (
-            <div>
-              <p>
-                <Badge color="dark">Found {this.state.games.length} results</Badge>
-              </p>
-              
-              <ListGroup>
-                {this.state.games.map((game) => (
-                  <ListGroupItem key={game.id}>{game.title}</ListGroupItem>
-                ))}
-              </ListGroup>
-            </div>
-          ) : (
-            <Alert color="secondary">No games found for your search...</Alert>
-          )}
+          <GameResults data={this.state.pagedGames} currentPage={this.state.currentPage} onPageChange={this.handlePageClick} />
         </div>
       </div>
     );
