@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { Link } from "react-router-dom";
 import { Alert, ListGroup, ListGroupItem, Badge } from 'reactstrap';
 import ReactPaginate from 'react-paginate';
 
@@ -22,7 +23,9 @@ class GameResults extends Component {
                     <Fragment>
                         <ListGroup>
                         {items.map((game) => (
-                            <ListGroupItem key={game.id}>{game.title}</ListGroupItem>
+                            <ListGroupItem key={game.id}>
+                                <Link to={`/${game.id}`}>{game.title}</Link>
+                            </ListGroupItem>
                         ))}
                         </ListGroup>
 
