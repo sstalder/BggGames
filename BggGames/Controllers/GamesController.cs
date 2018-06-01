@@ -1,6 +1,7 @@
 ﻿using BggGames.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,27 +13,46 @@ namespace BggGames.Controllers
     [ApiController]
     public class GamesController : ControllerBase
     {
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Game>>> Get()
+        private readonly IMemoryCache _cache;
+        private const string CACHE_KEY = "games:cache";
+
+        public GamesController(IMemoryCache memoryCache)
         {
-            using (var ctx = new WebContext())
-            {
-                return await ctx.Games.ToListAsync();
-            }
+            _cache = memoryCache;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Game>>> Get()
+        {
+            return await GetGames();
         }
 
         [HttpGet("{search}")]
-        public async Task<ActionResult<IEnumerable<Game>>> Get(string search)
+        public async Task<ActionResult<List<Game>>> Get(string search)
         {
-            using (var ctx = new WebContext())
+            var results = await GetGames();
+
+            return results
+                .Where(x =>
+                    x.Title.Contains(search, StringComparison.InvariantCultureIgnoreCase) ||
+                    x.SleeveData.Contains(search, StringComparison.InvariantCultureIgnoreCase)
+                )
+                .ToList();
+        }
+
+        private async Task<List<Game>> GetGames()
+        {
+            var results = await _cache.GetOrCreateAsync<List<Game>>(CACHE_KEY, async entry =>
             {
-                return await ctx.Games
-                    .Where(x =>
-                        x.Title.Contains(search, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.SleeveData.Contains(search, StringComparison.InvariantCultureIgnoreCase)
-                    )
-                    .ToListAsync();
-            }
+                entry.SlidingExpiration = TimeSpan.FromDays(7);
+
+                using (var ctx = new WebContext())
+                {
+                    return await ctx.Games.ToListAsync();
+                }
+            });
+
+            return results;
         }
     }
 }

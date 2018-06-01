@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace BggGames.Models
 {
@@ -8,7 +9,14 @@ namespace BggGames.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=(local);Database=BggScrape;User=sa;Password=switchbox");
+            if (Environment.MachineName.Contains("STEVE-DESKTOP"))
+            {
+                optionsBuilder.UseSqlServer(@"Server=beast;Database=BggScrape;User=sa;Password=beast");
+            }
+            else
+            {
+                optionsBuilder.UseSqlServer(@"Server=(local);Database=BggScrape;User=sa;Password=switchbox");
+            }
         }
     }
 }
