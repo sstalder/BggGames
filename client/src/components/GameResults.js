@@ -1,8 +1,13 @@
 import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import { Alert, ListGroup, ListGroupItem, Badge } from 'reactstrap';
 import ReactPaginate from 'react-paginate';
 
+@inject('app')
+@withRouter
+@observer
 class GameResults extends Component {
   render() {
     // Ensure the component has the props:
@@ -46,7 +51,7 @@ class GameResults extends Component {
                             pageLinkClassName="page-link"
                             marginPagesDisplayed={0}
                             pageRangeDisplayed={15}
-                            onPageChange={this.props.onPageChange}
+                            onPageChange={(e) => this.props.app.goToPage(e.selected + 1)}
                             containerClassName={"pagination justify-content-center"}
                             subContainerClassName={"pages pagination justify-content-center"}
                             activeClassName={"page-item active"} />

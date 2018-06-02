@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, withRouter } from 'react-router-dom';
+import { observer, inject } from 'mobx-react';
 import Games from './components/Games';
 import GameDetails from './components/GameDetails';
 
 import './App.css';
 
+@inject('app', 'routing')
+@withRouter
+@observer
 class App extends Component {
   render() {
     return (
