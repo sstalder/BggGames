@@ -22,33 +22,32 @@ namespace BggGames.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Game>>> Get()
+        public async Task<ActionResult<List<GameListPoco>>> Get()
         {
             return await GetGames();
         }
 
         [HttpGet("{search}")]
-        public async Task<ActionResult<List<Game>>> Get(string search)
+        public async Task<ActionResult<List<GameListPoco>>> Get(string search)
         {
             var results = await GetGames();
 
             return results
                 .Where(x =>
-                    x.Title.Contains(search, StringComparison.InvariantCultureIgnoreCase) ||
-                    x.SleeveData.Contains(search, StringComparison.InvariantCultureIgnoreCase)
+                    x.Title.Contains(search, StringComparison.InvariantCultureIgnoreCase)
                 )
                 .ToList();
         }
 
-        private async Task<List<Game>> GetGames()
+        private async Task<List<GameListPoco>> GetGames()
         {
-            var results = await _cache.GetOrCreateAsync<List<Game>>(CACHE_KEY, async entry =>
+            var results = await _cache.GetOrCreateAsync<List<GameListPoco>>(CACHE_KEY, async entry =>
             {
                 entry.SlidingExpiration = TimeSpan.FromDays(7);
 
                 using (var ctx = new WebContext())
                 {
-                    return await ctx.Games.ToListAsync();
+                    return await ctx.Games.Select(x => new GameListPoco { ID = x.ID, Title = x.Title }).ToListAsync();
                 }
             });
 

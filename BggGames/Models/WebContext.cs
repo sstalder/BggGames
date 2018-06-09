@@ -15,7 +15,7 @@ namespace BggGames.Models
             }
             else
             {
-                optionsBuilder.UseSqlServer(@"Server=(local);Database=BggScrape;User=sa;Password=switchbox");
+                optionsBuilder.UseSqlServer(@"Server=(local);Database=BggScrape;User=sa;Password=Prograde2500!");
             }
         }
     }

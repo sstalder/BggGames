@@ -1,35 +1,21 @@
 import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
 import { NavLink } from "react-router-dom";
 //import { Alert, ListGroup, ListGroupItem, Badge } from 'reactstrap';
 
+@inject('app')
+@withRouter
+@observer
 class GameDetails extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      game: {
-        id: 0,
-        title: '',
-        rank: '',
-        sleeveData: '',
-        gameLink: '',
-        listLink: '',
-        rankLink: ''
-      }
-    };
-  }
-
-  componentWillMount = async () => {
+  async componentDidMount() {
     const { match } = this.props;
-    const request = await fetch(`http://localhost:5000/api/game/${match.params.gameId}`);
-    const data = await request.json();
-
-    // This will cause a re-render
-    this.setState({ game: data });
+    
+    await this.props.app.loadGame(match.params.gameId);
   }
 
   render() {
-    const { game } = this.state;
+    const { game } = this.props.app;
     const { match } = this.props;
 
     return (
