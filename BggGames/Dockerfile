@@ -4,9 +4,9 @@ EXPOSE 80
 
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
-COPY BggGames/BggGames.csproj BggGames/
-RUN dotnet restore BggGames/BggGames.csproj
-COPY . .
+COPY BggGames.csproj ./
+RUN dotnet restore BggGames.csproj
+COPY . ./
 WORKDIR /src/BggGames
 RUN dotnet build BggGames.csproj -c Release -o /app
 
